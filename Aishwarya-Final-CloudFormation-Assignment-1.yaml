@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation Stack to create a mini network with public and private EC2 instances, subnets, security groups, and a jump box for secure access, along with all essential networking components.
- 
+Description: VPC with 3 subnets, security groups, and EC2 instances
+
 Parameters:
   VpcCidr:
     Type: String
@@ -8,7 +8,7 @@ Parameters:
     Description: CIDR block for the VPC
 
   PublicSubnetCidr:
-    Type: String
+    Type: String 
     Default: 10.0.1.0/24
     Description: CIDR block for the public subnet
 
@@ -38,6 +38,43 @@ Resources:
       Tags:
         - Key: Name
           Value: My VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Public Route Table
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  JumpboxSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref JumpboxSubnet
+      RouteTableId: !Ref PublicRouteTable
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -113,8 +150,8 @@ Resources:
       KeyName: !Ref KeyName
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
-          DeviceIndex: '0'
-          GroupSet:
+          DeviceIndex: "0"
+          GroupSet: 
             - !Ref PublicSecurityGroup
           SubnetId: !Ref PublicSubnet
       Tags:
@@ -129,7 +166,7 @@ Resources:
       KeyName: !Ref KeyName
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
-          DeviceIndex: '0'
+          DeviceIndex: "0"
           GroupSet:
             - !Ref JumpboxSecurityGroup
           SubnetId: !Ref JumpboxSubnet
@@ -145,7 +182,7 @@ Resources:
       KeyName: !Ref KeyName
       NetworkInterfaces:
         - AssociatePublicIpAddress: false
-          DeviceIndex: '0'
+          DeviceIndex: "0"
           GroupSet:
             - !Ref PrivateSecurityGroup
           SubnetId: !Ref PrivateSubnet
