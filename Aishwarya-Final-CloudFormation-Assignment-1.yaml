@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: VPC with 3 subnets, security groups, and EC2 instances
-
+Description: CloudFormation Stack to create a mini network with public and private EC2 instances, subnets, security groups, and a jump box for secure access, along with all essential networking components.
+ 
 Parameters:
   VpcCidr:
     Type: String
@@ -189,3 +189,27 @@ Resources:
       Tags:
         - Key: Name
           Value: Private EC2 Instance
+
+#Mentioning Outputs for my Stack
+Outputs:
+
+  PublicInstanceID:
+    Description: The Instance ID of the Public EC2 Instance
+    Value: !Ref PublicEC2Instance
+ 
+  PrivateInstanceID:
+    Description: The Instance ID of the Private EC2 Instance
+    Value: !Ref PrivateEC2Instance
+ 
+  PublicInstancePublicIP:
+    Description: The Public IP of the Public EC2 Instance
+    Value: !GetAtt PublicEC2Instance.PublicIp
+ 
+  PrivateSubnetID:
+    Description: The Subnet ID of the Private Subnet
+    Value: !Ref PrivateSubnet
+ 
+  PublicSubnetID:
+    Description: The Subnet ID of the Public Subnet
+    Value: !Ref PublicSubnet
+           
